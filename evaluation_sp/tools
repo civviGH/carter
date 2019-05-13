@@ -12,7 +12,13 @@ webinterface in dem die daten graphisch dargestellt werden zur einfachen
 schlankes tool, was performance-technisch auf den clients unsichtbar sein sollte
 keine extra einrichten von irgendwas noetig, sei es sql datenbank, webserver
  oder dergleichen. tool installieren -> benutzen. einzige bedingung: python
+konfiguration an einem ort, server. nicht auf jedem client fuer leichtere
+ wartung
+windows und linux monitoring
 
+abaenderung
+
+auswahl durch begruendete kriterien
 
 1.) prometheus (plus grafana) [aktuell INS loesung]
 2.) munin
