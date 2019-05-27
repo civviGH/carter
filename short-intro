@@ -1,0 +1,35 @@
+CARTER - Ein simples Monitoring System in Python
+
+Das Monitoring Tool wird fuer das Institut fuer Numerische Simulation entwickelt. Es handelt sich dabei um eine auf dem 'Client-Server Model' basierende Applikation, die in Python 3 geschrieben wird. Schwerpunkt bei der Entwicklung liegt auf Einfachheit und Bedienbarkeit. Das Tool soll fuer die Groessenordnung von ca. 100 Client-systemen problemlos funktionieren.
+
+Der Server wird mit einem Webinterface ausgestattet, ueber das sich alle relevanten Informationen durch Graphen schnell und leicht ablesen lassen. Der Client soll so simpel wie moeglich gehalten werden und ausser einer Server URL keine weiteren Einstellungen benoetigen. Beide Komponenten sollen auf Linux und Windows Maschinen funktionieren. Um eine moeglichst einfache Bedienung und leichte Bereitstellung zu erreichen werden alle standard Werte der Konfiguration so gesetzt, dass das Programm nach Installation sofort benutzbar ist. Weitere feinere Einstellung fuer spezielle Systeme koennen dennoch getaetigt werden.
+Da der Client keine gesonderten Konfigurationen benoetigen soll werden alle Einstellungen auf der Server Seite getaetigt. Das fuehrt dazu, dass alle Einstellungen zentral vorgenommen werden. Teil der Kommunikation zwischen Server und Clienten beinhaltet dann die Uebermittlung der Konfiguration bzw. das Erfragen der gewuenschten Messwerte. Um Fehlkonfigurationen zu vermeiden wird der Server mit einem Config-Checker ausgestattet, der die syntaktische Korrektheit der Einstellungen prueft. Hierzu wird eine moeglichst passende und begruendet gewaehlte Parser-Sprache (bspw. yaml) verwendet. 
+Die Installation des Server und des Clients findet jeweils ueber das Python package mangement 'pip' statt.
+
+Um moeglichst viel Kontrolle ueber die gesammelten Metriken zu haben werde diese ueber Plugins realisiert. Jedes dieser Plugins (z.b. CPU, RAM, Festplattenspeicher etc.) ist dabei wieder sinnvoll mit Standards konfiguriert und bietet die Moeglichkeit, die Konfiguration fuer einzelne Hosts zu spezifizieren. Die Plugins beinhalten ebenfalls die Konfiguration, wie die Daten graphisch aufbereitet werden.
+Geplant ist zunaechst nur eine Echtzeitueberwachung.
+
+Zur Darstellung des Webinterfaces wird bootstrap verwendet, um moeglichst simpel verschiedene Endgerate, auch mobile, und Aufloesungen zu unterstuetzen, ohne dass Lesbarkeit verloren geht. Beispiele hierfuer finden sich auf
+https://quickadminpanel.com/blog/10-best-free-bootstrap-admin-themes-2017/
+
+Teil der Arbeit ist ebenfalls eine kleine Useability Studie, in der die Administration des Instituts fuer Numerische Simulation die Software installieren, bereitstellen und nutzen soll. Feedback der Administration kann dann genutzt werden, um die Software weiter zu verbessern.
+
+Die Dokumentation fuer das Tool wird ueber Sphinx stattfinden:
+http://www.sphinx-doc.org/en/master/
+
+Um alle Funktionalitaeten bereit zu stellen werden vermutlich unter anderem folgende Pakete verwendet:
+Flask (http://flask.pocoo.org/)
+SQLAlchemy (https://www.sqlalchemy.org/)
+PyYAML (https://pyyaml.org/wiki/PyYAMLDocumentation)
+Requests (http://docs.python-requests.org/en/master/)
+psutil (https://psutil.readthedocs.io/en/latest/)
+chart.js (https://www.chartjs.org/)
+bootstrap (https://getbootstrap.com/)
+
+Optionale Funktionalitaeten die je nach Entwicklungszeit bedacht werden koennen sind:
+REST API zur vollstaendigen Steuerung ueber das Webinterface
+TLS bzw. asynchrone Verschluesselung zwischen Client und Server
+Sicherung gegen Repeat Attacks
+Fehlerfrueherkennung durch selbstlernende erwartete Limits
+Time Series Analysis
+generelle Weiterentwicklung der Software zusammen mit der Administration des Instituts fuer numerische Simulation
