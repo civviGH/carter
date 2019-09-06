@@ -1,0 +1,9 @@
+basisklasse
+unit tests
+coverage tests
+carter carter-core carter-client
+server conf
+client conf
+server<->client comm
+server output httpd
+sphinx docu
