@@ -1,0 +1,15 @@
+python unit tests
+https://docs.python.org/3/library/unittest.html
+
+hackmd notes
+https://hackmd.io/dJsc30MrRwGJ-axniGIj-Q
+
+python3.6 socket tutorial:
+https://realpython.com/python-sockets/#multi-connection-client-and-server
+
+can dictionaries be modified?
+see dict_pentest.py
+pickle objecte sind nicht safe, siehe hackmd
+
+pep8 style guide
+https://www.python.org/dev/peps/pep-0008/

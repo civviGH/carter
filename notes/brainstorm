@@ -7,3 +7,4 @@ client conf
 server<->client comm
 server output httpd
 sphinx docu
+logging
