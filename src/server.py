@@ -14,7 +14,7 @@ class CarterServer(CarterCore):
 
   def read_config(self):
     with open("config.yml", "r") as config_file:
-      self.config = CarterCore.get_yaml_from_file(config_file)
+      self.config = CarterCore.get_dict_from_yaml_file(config_file)
     if self.config is None:
       return False
     return True

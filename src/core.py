@@ -8,7 +8,7 @@ class CarterCore():
     datetime_object = datetime.datetime.now()
     print(f"[{datetime_object}] - {message}")
 
-  def get_yaml_from_file(file_descriptor):
+  def get_dict_from_yaml_file(file_descriptor):
     try:
       output = yaml.safe_load(file_descriptor)
     except yaml.scanner.ScannerError as yaml_error:
