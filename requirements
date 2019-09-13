@@ -4,3 +4,4 @@ requests
 pyopenssl
 datetime
 flask
+flask-socketio

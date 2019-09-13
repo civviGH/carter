@@ -1,5 +1,8 @@
-from src.client import *
+from carter.client import *
+import time
 
 if __name__ == "__main__":
   client = CarterClient()
-  client.run()
+  while True:
+    client.contact_server()
+    time.sleep(3)

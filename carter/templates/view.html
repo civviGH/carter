@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+{% block title %}
+    <title>CARTER</title>
+{% endblock %}
+  </head>
+  <script
+    src="https://code.jquery.com/jquery-3.4.1.slim.js"
+    integrity="sha256-BTlTdQO9/fascB1drekrDVkaKd9PkwBymMlHOiG+qLI="
+    crossorigin="anonymous">
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
+  <script>
+    $(document).ready(function(){
+      var socket = io.connect('http://' + document.domain + ':' + location.port);
+      socket.on('database-update', function(updates){
+        for(var client_name in updates){
+          //console.log('update for ' + client_name);
+          for(var field_name in updates[client_name]){
+            id_string = client_name + '_' + field_name;
+            var field_span = $(document.getElementById(id_string));
+            field_span.html(updates[client_name][field_name]);
+          }
+        }
+      });
+    });
+  </script>
+  <body>
+{% block body %}
+Welcome to CARTER: <hr><hr>
+  {% for client_name, values in context.items() %}
+    <p id="{{ client_name }}">
+      {{ client_name }}<br>
+        {% for value_name, value in values.items() %}
+          {{ value_name }}: <span id="{{ client_name }}_{{ value_name }}">{{ value }}</span>
+        {% endfor %}
+    </p>
+    <hr>
+  {% endfor %}
+{% endblock %}
+  </body>
+</html>
