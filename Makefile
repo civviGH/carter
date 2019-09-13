@@ -12,3 +12,6 @@ env:
 
 test: env
 	env/bin/python -m unittest discover -s tests
+
+server: env
+	env/bin/python start_server.py
