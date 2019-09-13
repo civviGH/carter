@@ -1,0 +1,4 @@
+---
+client_port: 5000
+client_list:
+  - 127.0.0.1

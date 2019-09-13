@@ -1,2 +1,6 @@
-yaml
+pyyaml
+psutil
+requests
+pyopenssl
 datetime
+flask
