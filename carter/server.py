@@ -86,7 +86,7 @@ class CarterServer(CarterCore):
   ### BOILERPLATE
 
   def run(self):
-    self.socketio.run(self.flask_app, debug=True, port=65432)# ssl_context="adhoc"
+    self.socketio.run(self.flask_app, host='', debug=True, port=65432)# ssl_context="adhoc"
 
   def setup_flask(self):
     self.flask_app = Flask(__name__)
