@@ -1,4 +1,8 @@
 # custom
+
+cfg/client_config.yml
+cfg/server_config.yml
+
 # sqlite db files
 *.db
 
