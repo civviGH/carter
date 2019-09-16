@@ -36,11 +36,36 @@ class CarterClient(CarterCore):
       return json.dumps(response), 200
 
   def get_module_output(self, modulename):
+    """Creates the output values for a single module.
+
+    Args:
+      modulename: the name of the module to gather the data for
+
+    Returns:
+      The module value. Can be list/string or similar. Determined by the module.
+
+    Raises:
+      carter.exceptions.UnknownModule: if the module name is unknown.
+    """
     if modulename == "cpu_load":
       return psutil.cpu_percent()
     raise UnknownModule()
 
   def forge_answer_payload(self, server_token):
+    """Creates the dictionary to send to the server as a respond to a request.
+
+    Args:
+      server_token: The server token received from server.
+
+    Returns:
+      A dictionary with the following structure::
+
+        {'type': 'answer',
+        'answers': [LIST_OF_ANSWERS],
+        'version': the version string of the client,
+        'token': retrieved token for further communication,
+        'name': the fqdn of the client}
+    """
     payload = {}
     payload["type"] = "answer"
     payload["answers"] = []
@@ -52,6 +77,11 @@ class CarterClient(CarterCore):
   ### PUSH METHODS
 
   def forge_helo_payload(self):
+    """Creates the dictionary to send to the server for first contact.
+
+    Return:
+      A dictionary with type, version and name of the client.
+    """
     payload = {}
     payload["type"] = "helo"
     payload["version"] = self.version
@@ -59,6 +89,14 @@ class CarterClient(CarterCore):
     return payload
 
   def contact_server(self):
+    """Contacts the server to ask which data to send.
+
+    First creates a HELO payload and sends it. If communication succeeds
+    ``answer_server(validated_answer)`` is called.
+
+    Returns:
+      None in any case
+    """
     payload = self.forge_helo_payload()
     self.write_log(f"contactin server at {self.config['serverurl']}")
     try:
@@ -83,6 +121,14 @@ class CarterClient(CarterCore):
     return
 
   def answer_server(self, server_request):
+    """Contacts the server to send requested module values.
+
+    Args:
+      server_request: The complete data send by server with requested modules
+
+    Returns:
+      None in any case.
+    """
     answer = self.forge_answer_payload(server_request["token"])
     for module in server_request["requested"]:
       module_output = {}

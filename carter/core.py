@@ -15,6 +15,18 @@ class CarterCore:
     return config
 
   def get_dict_from_yaml_filename(self, filename):
+    """Gets the dictionary from a file assuming yaml syntax.
+
+    Args:
+      filename: The path to the wanted file.
+
+    Returns:
+      The content of the file as a dictionary.
+
+    Raises:
+      carter.exceptions.ConfigNotFound: if the file does not exist.
+      carter.exceptions.ConfigUnreadable: if the file is no valid yaml.
+    """
     if not os.path.isfile(filename):
       self.write_log(f"{filename} file not found")
       raise ConfigNotFound()
@@ -27,6 +39,17 @@ class CarterCore:
     return output
 
   def validate_and_return_request_protocol(self, protocol_dict):
+    """Validates a dictionary as CARTER request protocol.
+
+    Args:
+      protocol_dict: The dictionary to validate.
+
+    Returns:
+      The same dictionary.
+
+    Raises:
+      carter.exceptions.InvalidProtocol: if the dictionary violates the protocol.
+    """
     if not all(k in protocol_dict for k in ("type","version","requested", "token")):
       raise InvalidProtocol("Not all needed keys found in protocol")
     if protocol_dict["type"] != "request":
@@ -38,6 +61,17 @@ class CarterCore:
     return protocol_dict
 
   def validate_and_return_answer_protocol(self, protocol_dict):
+    """Validates a dictionary as CARTER answer protocol.
+
+    Args:
+      protocol_dict: The dictionary to validate.
+
+    Returns:
+      The same dictionary.
+
+    Raises:
+      carter.exceptions.InvalidProtocol: if the dictionary violates the protocol.
+    """
     if not all(k in protocol_dict for k in ("type","version","answers", "token", "name")):
       raise InvalidProtocol("Not all needed keys found in protocol")
     if protocol_dict["type"] != "answer":
@@ -49,6 +83,17 @@ class CarterCore:
     return protocol_dict
 
   def validate_and_return_contact_protocol(self, protocol_dict):
+    """Validates a dictionary as CARTER contact protocol.
+
+    Args:
+      protocol_dict: The dictionary to validate.
+
+    Returns:
+      The same dictionary.
+
+    Raises:
+      carter.exceptions.InvalidProtocol: if the dictionary violates the protocol.
+    """
     if not all(k in protocol_dict for k in ("type","version", "name")):
       raise InvalidProtocol("Not all needed keys found in protocol")
     if protocol_dict["type"] != "helo":

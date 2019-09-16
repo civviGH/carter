@@ -63,6 +63,25 @@ class CarterServer(CarterCore):
       return json.dumps(answer), 200
 
   def forge_request_payload(self, client_name):
+    """Creates and returns a dictionary to server as payload to
+    make a request to a client.
+
+    Also makes a note in the server tokenbase with the client name as key
+    and the token as value, to check if further communication with the client
+    who claims to have this name is actually the one we said HELO to.
+
+    Args:
+      client_name: The fqdn of the client as communicated by the client itself.
+
+    Returns:
+      A dictionary with the following structure::
+
+        {'type': 'request',
+        'requested': [LIST_OF_MODULES],
+        'version': the version string of the server,
+        'token': the 64 char long secret token used for further communication}
+
+    """
     payload = {}
     payload["type"] = "request"
     payload["requested"] = self.fill_requested_modules(client_name)
@@ -73,7 +92,17 @@ class CarterServer(CarterCore):
     return payload
 
   def fill_requested_modules(self, client_name):
-    #client_name not used yet, but includes real name as for now
+    """Create the list of the requested modules based on the client name.
+
+    Args:
+      client_name: The fqdn of the client
+
+    Returns:
+      A list of module instructions.
+
+    Todo:
+      Allow individual config per client.
+    """
     cpu_module = {}
     cpu_module["name"] = "cpu_load"
     return [cpu_module]
@@ -102,6 +131,23 @@ class CarterServer(CarterCore):
   ### DATABASE
 
   def write_report_to_database(self, reported_answer, client_name):
+    """Writes the answer of a client to the database.
+
+    Also emits a ``database-update`` signal to adjust the view with the newly
+    retrieved data. If a client gets added to the database for the first time,
+    a ``refresh_page`` signal is sent instead, refreshing the whole page and
+    updating the view with the new client data.
+
+    Reads ``live_update`` from the config to determine wether or not live
+    updates should be made.
+
+    Args:
+      reported_answer: The complete dictionary as posted by the client.
+      client_name The fqdn of the client.
+
+    Returns:
+      None
+    """
     refresh_page = False
     if client_name not in self.database.keys():
       self.database[client_name] = {}
@@ -109,9 +155,10 @@ class CarterServer(CarterCore):
     for answer in reported_answer["answers"]:
       self.database[client_name][answer['name']] = answer['value']
     if self.config["live_update"]:
-      self.socketio.emit('database-update', {client_name: self.database[client_name]})
       if refresh_page:
         self.socketio.emit('refresh-page')
+      else:
+        self.socketio.emit('database-update', {client_name: self.database[client_name]})
     return
 
   def print_database(self):
