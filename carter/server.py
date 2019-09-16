@@ -102,12 +102,16 @@ class CarterServer(CarterCore):
   ### DATABASE
 
   def write_report_to_database(self, reported_answer, client_name):
+    refresh_page = False
     if client_name not in self.database.keys():
       self.database[client_name] = {}
+      refresh_page = True
     for answer in reported_answer["answers"]:
       self.database[client_name][answer['name']] = answer['value']
     if self.config["live_update"]:
       self.socketio.emit('database-update', {client_name: self.database[client_name]})
+      if refresh_page:
+        self.socketio.emit('refresh-page')
     return
 
   def print_database(self):

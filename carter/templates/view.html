@@ -25,6 +25,9 @@
           }
         }
       });
+      socket.on('refresh-page', function(updates){
+        location.reload();
+      });
     });
   </script>
   <body>
