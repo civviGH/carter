@@ -27,7 +27,7 @@ class CarterCore:
     return output
 
   def validate_and_return_request_protocol(self, protocol_dict):
-    if not all(k in protocol_dict for k in ("type","version","requested")):
+    if not all(k in protocol_dict for k in ("type","version","requested", "token")):
       raise InvalidProtocol("Not all needed keys found in protocol")
     if protocol_dict["type"] != "request":
       raise InvalidProtocol(f"Wrong protocol type for {self.carter_type}")
@@ -38,7 +38,7 @@ class CarterCore:
     return protocol_dict
 
   def validate_and_return_answer_protocol(self, protocol_dict):
-    if not all(k in protocol_dict for k in ("type","version","answers")):
+    if not all(k in protocol_dict for k in ("type","version","answers", "token", "name")):
       raise InvalidProtocol("Not all needed keys found in protocol")
     if protocol_dict["type"] != "answer":
       raise InvalidProtocol(f"Wrong protocol type for {self.carter_type}")
@@ -49,7 +49,7 @@ class CarterCore:
     return protocol_dict
 
   def validate_and_return_contact_protocol(self, protocol_dict):
-    if not all(k in protocol_dict for k in ("type","version")):
+    if not all(k in protocol_dict for k in ("type","version", "name")):
       raise InvalidProtocol("Not all needed keys found in protocol")
     if protocol_dict["type"] != "helo":
       raise InvalidProtocol(f"Wrong protocol type for {self.carter_type}")

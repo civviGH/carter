@@ -1,9 +1,12 @@
 from carter.core import CarterCore
+from carter.exceptions import *
+from flask import Flask, request, render_template
+from flask_socketio import SocketIO
+
 import requests
 import json
 import sqlite3
-from flask import Flask, request, render_template
-from flask_socketio import SocketIO
+import secrets
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -23,7 +26,18 @@ class CarterServer(CarterCore):
     def get_client_helo():
       self.write_log(f"handling contact from {request.remote_addr}")
       #TODO helo answer verify
-      answer = self.forge_request_payload(request.remote_addr)
+      try:
+        validated_helo = self.validate_and_return_contact_protocol(json.loads(request.json))
+      except InvalidProtocol as ip:
+        self.write_log(ip.message)
+        return "", 400
+      except json.decoder.JSONDecodeError as je:
+        self.write_log("client helo was not json syntax")
+        return "", 400
+      except TypeError as te:
+        self.write_log("client helo did not contain json data")
+        return "", 400
+      answer = self.forge_request_payload(validated_helo["name"])
       return json.dumps(answer), 200
 
     @self.flask_app.route("/answer", methods = ["POST"])
@@ -31,8 +45,21 @@ class CarterServer(CarterCore):
       self.write_log(f"handling answer from {request.remote_addr}")
       answer = {}
       answer["success"] = True
-      validated_answer = self.validate_and_return_answer_protocol(json.loads(request.json))
-      self.write_report_to_database(validated_answer, request.remote_addr)
+      try:
+        validated_answer = self.validate_and_return_answer_protocol(json.loads(request.json))
+      except InvalidProtocol as ip:
+        self.write_log(ip.message)
+        return
+      client_name = validated_answer["name"]
+      client_token = validated_answer["token"]
+      token_in_db = self.tokenbase.pop(client_name, None)
+      if token_in_db is None:
+        self.write_log(f"{client_name} answers but has no valid token")
+        return 400
+      if not secrets.compare_digest(token_in_db, client_token):
+        self.write_log(f"{client_name} has answer token, but it differs from my db")
+        return 400
+      self.write_report_to_database(validated_answer, client_name)
       return json.dumps(answer), 200
 
   def forge_request_payload(self, client_name):
@@ -40,10 +67,13 @@ class CarterServer(CarterCore):
     payload["type"] = "request"
     payload["requested"] = self.fill_requested_modules(client_name)
     payload["version"] = self.version
+    client_token = secrets.token_hex()
+    payload["token"] = client_token
+    self.tokenbase[client_name] = client_token
     return payload
 
   def fill_requested_modules(self, client_name):
-    #client_name not used yet
+    #client_name not used yet, but includes real name as for now
     cpu_module = {}
     cpu_module["name"] = "cpu_load"
     return [cpu_module]
@@ -100,4 +130,5 @@ class CarterServer(CarterCore):
     self.config = self.get_config()
     self.version = "0.1"
     self.database = {}
+    self.tokenbase = {}
     self.setup_flask()

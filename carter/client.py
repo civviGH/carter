@@ -4,6 +4,7 @@ from flask import Flask, request
 import json
 import psutil
 import requests
+import socket
 
 
 class CarterClient(CarterCore):
@@ -39,11 +40,13 @@ class CarterClient(CarterCore):
       return psutil.cpu_percent()
     raise UnknownModule()
 
-  def forge_answer_payload(self):
+  def forge_answer_payload(self, server_token):
     payload = {}
     payload["type"] = "answer"
     payload["answers"] = []
     payload["version"] = self.version
+    payload["token"] = server_token
+    payload["name"] = self.fqdn
     return payload
 
   ### PUSH METHODS
@@ -52,6 +55,7 @@ class CarterClient(CarterCore):
     payload = {}
     payload["type"] = "helo"
     payload["version"] = self.version
+    payload["name"] = self.fqdn
     return payload
 
   def contact_server(self):
@@ -79,7 +83,7 @@ class CarterClient(CarterCore):
     return
 
   def answer_server(self, server_request):
-    answer = self.forge_answer_payload()
+    answer = self.forge_answer_payload(server_request["token"])
     for module in server_request["requested"]:
       module_output = {}
       module_output["name"] = module["name"]
@@ -105,8 +109,7 @@ class CarterClient(CarterCore):
     self.config_path = config_path
     self.config = self.get_config()
     self.version = "0.1"
-    if self.config is None:
-      self.write_log(f"{self.config_path} could not be read.")
+    self.fqdn = socket.getfqdn()
     #self.flask_app = Flask(__name__)
 
     from requests.packages.urllib3.exceptions import InsecureRequestWarning
