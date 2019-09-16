@@ -1,5 +1,7 @@
 pyyaml
 psutil
+sphinx
+sphinx_rtd_theme
 requests
 pyopenssl
 datetime
