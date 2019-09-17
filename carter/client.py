@@ -113,6 +113,7 @@ class CarterClient(CarterCore):
       validated_answer = self.validate_and_return_request_protocol(json.loads(server_response.text))
     except InvalidProtocol as ip:
       self.write_log(ip.message)
+      self.write_log(json.loads(server_response.text))
       return
     except json.decoder.JSONDecodeError as je:
       self.write_log("server answer was not json syntax")
