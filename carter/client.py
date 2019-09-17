@@ -102,7 +102,7 @@ class CarterClient(CarterCore):
     try:
       server_response = requests.post(f"https://{self.config['serverurl']}/contact",
        json=json.dumps(payload),
-       verify=False)
+       verify=self.config["server_cert"])
     except requests.exceptions.ConnectionError as ce:
       self.write_log(f"failed to connect to server at {self.config['serverurl']}. connection refused")
       return
@@ -139,7 +139,7 @@ class CarterClient(CarterCore):
     self.write_log(f"answering server")
     server_response = requests.post(f"https://{self.config['serverurl']}/answer",
      json=json.dumps(answer),
-     verify=False)
+     verify=self.config["server_cert"])
     if server_response.status_code != 200:
       self.write_log(f"server answerer with status code {server_response.status_code}")
       return
@@ -157,7 +157,5 @@ class CarterClient(CarterCore):
     self.config = self.get_config()
     self.version = "0.1"
     self.fqdn = socket.getfqdn()
+    print(self.config)
     #self.flask_app = Flask(__name__)
-
-    from requests.packages.urllib3.exceptions import InsecureRequestWarning
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)

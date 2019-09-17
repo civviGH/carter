@@ -1,4 +1,4 @@
 ---
 live_update: True
-cert_file: "/home/voss/git/carter/temp/selfsigned.crt"
-key_file: "/home/voss/git/carter/temp/private.key"
+cert_file: "/home/voss/git/carter/temp/cert.pem"
+key_file: "/home/voss/git/carter/temp/private_key.pem"

@@ -2,18 +2,12 @@ from carter.core import CarterCore
 from carter.exceptions import *
 from flask import Flask, request, render_template
 from flask_socketio import SocketIO
-#from gevent import monkey
-#monkey.patch_all()
 
 import requests
 import json
 import sqlite3
 import secrets
-#from OpenSSL import SSL
-#import ssl
-
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+import ssl
 
 
 class CarterServer(CarterCore):
@@ -197,7 +191,7 @@ class CarterServer(CarterCore):
     self.flask_app.config["SECRET_KEY"] = "secret"
     self.setup_flask_routing()
     self.socketio = SocketIO(self.flask_app, async_mode="gevent")
-    #self.setup_socketio_events()
+
 
   def __init__(self, config_path = "cfg/server_config.yml"):
     self.carter_type = "server"
