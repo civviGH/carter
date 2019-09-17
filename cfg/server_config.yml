@@ -1,4 +1,4 @@
 ---
 live_update: True
-cert_file: "/home/voss/git/carter/temp/cert.pem"
-key_file: "/home/voss/git/carter/temp/private_key.pem"
+cert_file: "temp/cert.pem"
+key_file: "temp/private_key.pem"
