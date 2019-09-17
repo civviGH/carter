@@ -100,7 +100,7 @@ class CarterClient(CarterCore):
     payload = self.forge_helo_payload()
     self.write_log(f"contactin server at {self.config['serverurl']}")
     try:
-      server_response = requests.post(f"http://{self.config['serverurl']}/contact",
+      server_response = requests.post(f"https://{self.config['serverurl']}/contact",
        json=json.dumps(payload),
        verify=False)
     except requests.exceptions.ConnectionError as ce:
@@ -137,7 +137,7 @@ class CarterClient(CarterCore):
       module_output["value"] = self.get_module_output(module["name"])
       answer["answers"].append(module_output)
     self.write_log(f"answering server")
-    server_response = requests.post(f"http://{self.config['serverurl']}/answer",
+    server_response = requests.post(f"https://{self.config['serverurl']}/answer",
      json=json.dumps(answer),
      verify=False)
     if server_response.status_code != 200:

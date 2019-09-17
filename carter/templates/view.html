@@ -15,14 +15,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
   <script>
     $(document).ready(function(){
-      var socket = io.connect('http://' + document.domain + ':' + location.port);
+      var socket = io.connect('https://' + document.domain + ':' + location.port);
       socket.on('database-update', function(updates){
         for(var client_name in updates){
           for(var field_name in updates[client_name]){
             id_string = 'c_' + client_name + '_' + field_name;
             var ctx = document.getElementById(id_string);
-            console.log("{{ client_name }}");
-            console.log(ctx);
             var chart = new Chart(ctx, {
               type: 'bar',
               data: {

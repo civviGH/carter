@@ -184,10 +184,10 @@ class CarterServer(CarterCore):
       self.flask_app,
       host='',
       debug=True,
-      port=65432
+      port=65432,
       #ssl_context = context
-      #certfile=self.config["cert_file"],
-      #keyfile=self.config["key_file"]
+      certfile=self.config["cert_file"],
+      keyfile=self.config["key_file"]
       #ssl_version=ssl.PROTOCOL_TLSv1_2,
       #cert_reqs=ssl.CERT_REQUIRED
       ) # ssl_context="adhoc"
