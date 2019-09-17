@@ -2,6 +2,7 @@
 
 cfg/client_config.yml
 cfg/server_config.yml
+temp/
 
 # sqlite db files
 *.db
