@@ -1,5 +1,4 @@
 ---
-client_port: 5000
-client_list:
-  - 127.0.0.1
 live_update: True
+cert_file: "/home/voss/git/carter/temp/selfsigned.crt"
+key_file: "/home/voss/git/carter/temp/private.key"

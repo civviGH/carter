@@ -2,11 +2,15 @@ from carter.core import CarterCore
 from carter.exceptions import *
 from flask import Flask, request, render_template
 from flask_socketio import SocketIO
+#from gevent import monkey
+#monkey.patch_all()
 
 import requests
 import json
 import sqlite3
 import secrets
+#from OpenSSL import SSL
+#import ssl
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -18,6 +22,11 @@ class CarterServer(CarterCore):
     return
 
   def setup_flask_routing(self):
+
+    @self.flask_app.route("/config")
+    def return_config():
+      return self.config
+
     @self.flask_app.route("/view", methods = ["GET"])
     def return_view():
       return render_template("view.html", context=self.database)
@@ -156,6 +165,7 @@ class CarterServer(CarterCore):
       self.database[client_name][answer['name']] = answer['value']
     if self.config["live_update"]:
       if refresh_page:
+        self.write_log(f"refreshing page to update {client_name}")
         self.socketio.emit('refresh-page')
       else:
         self.socketio.emit('database-update', {client_name: self.database[client_name]})
@@ -167,12 +177,26 @@ class CarterServer(CarterCore):
   ### BOILERPLATE
 
   def run(self):
-    self.socketio.run(self.flask_app, host='', debug=True, port=65432)# ssl_context="adhoc"
+    #context = SSL.Context(SSL.SSLv23_METHOD)
+    #context.use_privatekey_file(self.config["key_file"])
+    #context.use_certificate_file(self.config["cert_file"])
+    self.socketio.run(
+      self.flask_app,
+      host='',
+      debug=True,
+      port=65432
+      #ssl_context = context
+      #certfile=self.config["cert_file"],
+      #keyfile=self.config["key_file"]
+      #ssl_version=ssl.PROTOCOL_TLSv1_2,
+      #cert_reqs=ssl.CERT_REQUIRED
+      ) # ssl_context="adhoc"
 
   def setup_flask(self):
     self.flask_app = Flask(__name__)
+    self.flask_app.config["SECRET_KEY"] = "secret"
     self.setup_flask_routing()
-    self.socketio = SocketIO(self.flask_app)
+    self.socketio = SocketIO(self.flask_app, async_mode="gevent")
     #self.setup_socketio_events()
 
   def __init__(self, config_path = "cfg/server_config.yml"):
@@ -182,4 +206,5 @@ class CarterServer(CarterCore):
     self.version = "0.1"
     self.database = {}
     self.tokenbase = {}
+    print(self.config)
     self.setup_flask()
