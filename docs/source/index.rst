@@ -10,22 +10,20 @@ Welcome to CARTER's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-.. autoclass:: carter.server.CarterServer
-    :members:
+   intro
 
-.. autoclass:: carter.client.CarterClient
-    :members:
+.. toctree::
+    :caption: Modules:
 
-.. autoclass:: carter.core.CarterCore
-    :members:
+    client
+    server
+    core
+    exceptions
 
-Installation
-============
-``git clone``
+..
+    Indices and tables
+    ==================
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    * :ref:`genindex`
+    * :ref:`modindex`
+    * :ref:`search`
