@@ -48,7 +48,7 @@ class CarterClient(CarterCore):
       carter.exceptions.UnknownModule: if the module name is unknown.
     """
     if modulename == "cpu_load":
-      return psutil.cpu_percent()
+      return psutil.cpu_percent(percpu=True)
     raise UnknownModule()
 
   def forge_answer_payload(self, server_token):

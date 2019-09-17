@@ -11,17 +11,44 @@
     integrity="sha256-BTlTdQO9/fascB1drekrDVkaKd9PkwBymMlHOiG+qLI="
     crossorigin="anonymous">
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
   <script>
     $(document).ready(function(){
       var socket = io.connect('http://' + document.domain + ':' + location.port);
       socket.on('database-update', function(updates){
         for(var client_name in updates){
-          //console.log('update for ' + client_name);
           for(var field_name in updates[client_name]){
-            id_string = client_name + '_' + field_name;
-            var field_span = $(document.getElementById(id_string));
-            field_span.html(updates[client_name][field_name]);
+            id_string = 'c_' + client_name + '_' + field_name;
+            var ctx = document.getElementById(id_string);
+            console.log("{{ client_name }}");
+            console.log(ctx);
+            var chart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ["1", "2", "3", "4","5","6","7","8","9","10","11","12"],
+                datasets: [{
+                  label: "CPU usage in percent",
+                  data: updates[client_name][field_name],
+                  backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                scales: {
+                  yAxes: [{
+                    ticks: {
+                      beginAtZero: true,
+                      max: 100
+                    }
+                  }]
+                },
+                responsive: false,
+                animation: {
+                  duration: 1
+                }
+              }
+            });
           }
         }
       });
@@ -37,7 +64,36 @@ Welcome to CARTER: <hr><hr>
     <p id="{{ client_name }}">
       {{ client_name }}<br>
         {% for value_name, value in values.items() %}
-          {{ value_name }}: <span id="{{ client_name }}_{{ value_name }}">{{ value }}</span>
+          <canvas id="c_{{ client_name }}_{{ value_name }}" width="400" height="400"></canvas>
+          <script>
+            var ctx = document.getElementById('c_{{ client_name }}_{{ value_name }}');
+            var chart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ["1", "2", "3", "4","5","6","7","8","9","10","11","12"],
+                datasets: [{
+                  label: "CPU usage in percent",
+                  data: {{ value }},
+                  backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                scales: {
+                  yAxes: [{
+                    ticks: {
+                      beginAtZero: true,
+                      max: 100
+                    }
+                  }]
+                },
+                responsive: false,
+                animation: {
+                  duration: 1
+                }
+              }
+            });
+          </script>
         {% endfor %}
     </p>
     <hr>

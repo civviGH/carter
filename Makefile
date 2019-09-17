@@ -7,7 +7,7 @@ clean:
 
 env:
 	virtualenv --python=python3 env
-	env/bin/pip install -r requirements
+	env/bin/pip install -r requirements.txt
 	#env/bin/pip install -e $(ROOT_DIR)
 
 test: env
