@@ -65,6 +65,9 @@ class ModulePackage(CarterPackage):
         if module["type"] == "cpu":
           self.modules.append(CPUModule(**module))
           continue
+        if module["type"] == "memory":
+          self.modules.append(MemoryModule(**module))
+          continue
         raise UnknownModule(f"module with type {module['type']} unknown")
 
   def add_module(self, module):
@@ -99,6 +102,9 @@ class CPUModule(CarterModule):
       pass
     return 0
 
+  def pp(self):
+    return json.dumps(self.get_render_options(), sort_keys = True, indent = 2)
+
   def get_render_options(self):
     # proof of concept color coding
     DEFAULT_COLOR = "rgba(178, 178, 178, 0.2)"
@@ -123,7 +129,43 @@ class CPUModule(CarterModule):
     return render_data
 
 class MemoryModule(CarterModule):
-  pass
+
+  def __init__(self, **kwargs):
+    self.type = "memory"
+    self.label = "RAM usage"
+    if "ram_values" in kwargs:
+      self.ram_values = kwargs["ram_values"]
+
+  def get_information(self):
+    import psutil
+    memory_values = psutil.virtual_memory()._asdict()
+    total = memory_values['total']
+    available = memory_values['available']
+    rest = total - available
+    self.ram_values = [total, available, rest]
+
+  def __len__(self):
+    try:
+      return len(self.ram_values)
+    except:
+      pass
+    return 0
+
+  def pp(self):
+    return json.dumps(self.get_render_options(), sort_keys = True, indent = 2)
+
+  def get_render_options(self):
+    USED_COLOR = "rgba(255, 99, 132, 0.2)"
+    FREE_COLOR = "rgba(178, 178, 178, 0.2)"
+    render_data = self.init_render_options()
+    render_data["type"] = "doughnut"
+    render_data["data"]["labels"] = ["free", "used"]
+    dataset = {}
+    dataset["label"] = self.label
+    dataset["data"] = self.ram_values[1:]
+    dataset["backgroundColor"] = [FREE_COLOR, USED_COLOR]
+    render_data["data"]["datasets"] = [dataset]
+    return render_data
 
 class DiskModule(CarterModule):
   pass

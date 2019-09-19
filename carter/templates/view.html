@@ -11,24 +11,23 @@
     integrity="sha256-BTlTdQO9/fascB1drekrDVkaKd9PkwBymMlHOiG+qLI="
     crossorigin="anonymous">
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
   <script src={{ url_for('static', filename='script.js') }}></script>
-  <body>
 {% block body %}
 Welcome to CARTER: <hr><hr>
   {% for client_name, module_dict in context.items() %}
-    <p id="{{ client_name }}">
+    <p id="{{ client_name }}" style="width: 100%">
+      {{ client_name }}<br>
       {% for moduletype, module in module_dict.items() %}
-        {{ client_name }}<br>
-        <canvas id="c_{{ client_name }}_{{ moduletype }}" width="400" height="400"></canvas>
+        <canvas style="float: left;" id="c_{{ client_name }}_{{ moduletype }}" width="400" height="400"></canvas>
         <script>
           var ctx = document.getElementById('c_{{ client_name }}_{{ moduletype }}');
-          var chart = new Chart(ctx, {{ module.get_render_options()|tojson }});
+          var c = new Chart(ctx, {{ module.get_render_options()|tojson }});
+          $(ctx).data('storedChart', c);
         </script>
       {% endfor %}
     </p>
-    <hr>
   {% endfor %}
 {% endblock %}
   </body>

@@ -8,24 +8,6 @@ import socket
 
 class CarterClient(CarterCore):
 
-  def get_module_output(self, module):
-    """Creates the output values for a single module.
-
-    Args:
-      modulename: the name of the module to gather the data for
-
-    Returns:
-      The module value. Can be list/string or similar. Determined by the module.
-
-    Raises:
-      carter.exceptions.UnknownModule: if the module name is unknown.
-    """
-    if isinstance(module, CPUModule):
-      cpu_module = CPUModule()
-      cpu_module.get_information()
-      return cpu_module
-    raise UnknownModule()
-
   ### PUSH METHODS
 
   def forge_hello_package(self):

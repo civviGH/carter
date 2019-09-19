@@ -93,6 +93,7 @@ class CarterServer(CarterCore):
     self.tokenbase[package.client_name] = package.token
     # which modules to add depends on the client configuration
     package.add_module(CPUModule())
+    package.add_module(MemoryModule())
     return package
 
   ### DATABASE
@@ -141,9 +142,8 @@ class CarterServer(CarterCore):
         for module in reported_answer.modules:
           data = {}
           data["client_name"] = client_name
-          data["module"] = {}
-          data["module"]["type"] = module.type
-          data["module"]["render_options"] = module.get_render_options()
+          data["type"] = module.type
+          data["data"] = module.get_render_options()["data"]
           self.socketio.emit('update-module-of-client', data)
     return
 
