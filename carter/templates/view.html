@@ -14,10 +14,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.slim.js"></script>
   <script src={{ url_for('static', filename='script.js') }}></script>
+  <link rel='stylesheet' type='text/css' href={{ url_for('static', filename='style.css') }}>
 {% block body %}
-Welcome to CARTER: <hr><hr>
+<h1>Welcome to CARTER:</h1>
   {% for client_name, module_dict in context.items() %}
-    <p id="{{ client_name }}" style="width: 100%">
+    <div class="outer-div" id="{{ client_name }}">
       {{ client_name }}<br>
       {% for moduletype, module in module_dict.items() %}
         <canvas style="float: left;" id="c_{{ client_name }}_{{ moduletype }}" width="400" height="400"></canvas>
@@ -27,7 +28,7 @@ Welcome to CARTER: <hr><hr>
           $(ctx).data('storedChart', c);
         </script>
       {% endfor %}
-    </p>
+    </div>
   {% endfor %}
 {% endblock %}
   </body>
