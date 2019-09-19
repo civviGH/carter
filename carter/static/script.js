@@ -1,3 +1,12 @@
+Chart.defaults.global.animation = false;
+Chart.defaults.global.responsive = false;
+Chart.scaleService.updateScaleDefaults('linear', {
+  ticks:
+  { max: 100,
+    beginAtZero: true
+  }
+})
+
 $(document).ready(function(){
   var socket = io.connect('https://' + document.domain + ':' + location.port);
   socket.on('update-module-of-client', function(updates){

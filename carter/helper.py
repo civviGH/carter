@@ -55,16 +55,16 @@ def get_default_render_options():
   render_options["type"] = "bar"
   render_options["data"] = {}
   render_options["data"]["datasets"] = []
-  render_options["options"] = {}
-  render_options["options"]["scales"] = {}
-  render_options["options"]["scales"]["yAxes"] = []
-  yAxes = {}
-  yAxes["ticks"] = {}
-  yAxes["ticks"]["beginAtZero"] = True
-  yAxes["ticks"]["max"] = 100
-  render_options["options"]["scales"]["yAxes"].append(yAxes)
-  render_options["options"]["responsive"] = False
-  render_options["options"]["animation"] = False
+  #render_options["options"] = {}
+  #render_options["options"]["scales"] = {}
+  #render_options["options"]["scales"]["yAxes"] = []
+  #yAxes = {}
+  #yAxes["ticks"] = {}
+  #yAxes["ticks"]["beginAtZero"] = True
+  #yAxes["ticks"]["max"] = 100
+  #render_options["options"]["scales"]["yAxes"].append(yAxes)
+  #render_options["options"]["responsive"] = False
+  #render_options["options"]["animation"] = False
   return render_options
 
 if __name__ == "__main__":

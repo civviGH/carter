@@ -3,7 +3,6 @@ import datetime
 import os
 import json
 from carter.exceptions import *
-from carter.helper import get_default_render_options
 
 class CarterCore:
 
@@ -76,8 +75,10 @@ class CarterModule:
   def __init__(self, **kwargs):
     self.type = kwargs["type"]
 
-  def render(self):
-    return f"{self.type} has no render function defined!"
+  def init_render_options(self):
+    render_options = {}
+    render_options["data"] = {}
+    return render_options
 
 class CPUModule(CarterModule):
 
@@ -103,7 +104,8 @@ class CPUModule(CarterModule):
     DEFAULT_COLOR = "rgba(178, 178, 178, 0.2)"
     WARNING_COLOR = "rgba(234, 237, 37, 0.2)"
     ERROR_COLOR = "rgba(255, 99, 132, 0.2)"
-    render_data = get_default_render_options()
+    render_data = self.init_render_options()
+    render_data["type"] = "bar"
     render_data["data"]["labels"] = list(range(1, len(self) + 1))
     dataset = {}
     dataset["label"] = self.label
