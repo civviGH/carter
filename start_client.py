@@ -5,4 +5,4 @@ if __name__ == "__main__":
   client = CarterClient()
   while True:
     client.contact_server()
-    time.sleep(3)
+    time.sleep(1)

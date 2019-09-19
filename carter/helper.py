@@ -6,6 +6,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 
+import json
+
 def create_cert(CERT_FILE = "temp/cert.pem", KEY_FILE = "temp/private_key.pem"):
   key = rsa.generate_private_key(
     public_exponent=65537,
@@ -47,6 +49,23 @@ def create_cert(CERT_FILE = "temp/cert.pem", KEY_FILE = "temp/private_key.pem"):
 
   with open(CERT_FILE, "wb") as cf:
     cf.write(cert.public_bytes(serialization.Encoding.PEM))
+
+def get_default_render_options():
+  render_options = {}
+  render_options["type"] = "bar"
+  render_options["data"] = {}
+  render_options["data"]["datasets"] = []
+  render_options["options"] = {}
+  render_options["options"]["scales"] = {}
+  render_options["options"]["scales"]["yAxes"] = []
+  yAxes = {}
+  yAxes["ticks"] = {}
+  yAxes["ticks"]["beginAtZero"] = True
+  yAxes["ticks"]["max"] = 100
+  render_options["options"]["scales"]["yAxes"].append(yAxes)
+  render_options["options"]["responsive"] = False
+  render_options["options"]["animation"] = False
+  return render_options
 
 if __name__ == "__main__":
   create_cert()

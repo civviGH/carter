@@ -1,7 +1,9 @@
 import yaml
 import datetime
 import os
+import json
 from carter.exceptions import *
+from carter.helper import get_default_render_options
 
 class CarterCore:
 
@@ -38,66 +40,88 @@ class CarterCore:
         raise ConfigUnreadable()
     return output
 
-  def validate_and_return_request_protocol(self, protocol_dict):
-    """Validates a dictionary as CARTER request protocol.
 
-    Args:
-      protocol_dict: The dictionary to validate.
+class CarterPackage:
 
-    Returns:
-      The same dictionary.
+  def __init__(self, **kwargs):
+    self.version = kwargs["version"]
+    self.client_name = kwargs["client_name"]
 
-    Raises:
-      carter.exceptions.InvalidProtocol: if the dictionary violates the protocol.
-    """
-    if not all(k in protocol_dict for k in ("type","version","requested", "token")):
-      raise InvalidProtocol("Not all needed keys found in protocol")
-    if protocol_dict["type"] != "request":
-      raise InvalidProtocol(f"Wrong protocol type for {self.carter_type}")
-    if protocol_dict["version"] != self.version:
-      raise InvalidProtocol(f"Version missmatch: I am {self.version}, but the protocol speaks {protocol_dict['version']}")
-    if len(protocol_dict["requested"]) <= 0:
-      raise InvalidProtocol(f"No modules requested")
-    return protocol_dict
+  def to_json(self):
+    return json.dumps(self, default=lambda o: getattr(o, '__dict__', str(o)))
 
-  def validate_and_return_answer_protocol(self, protocol_dict):
-    """Validates a dictionary as CARTER answer protocol.
+class HelloPackage(CarterPackage):
 
-    Args:
-      protocol_dict: The dictionary to validate.
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
 
-    Returns:
-      The same dictionary.
+class ModulePackage(CarterPackage):
 
-    Raises:
-      carter.exceptions.InvalidProtocol: if the dictionary violates the protocol.
-    """
-    if not all(k in protocol_dict for k in ("type","version","answers", "token", "name")):
-      raise InvalidProtocol("Not all needed keys found in protocol")
-    if protocol_dict["type"] != "answer":
-      raise InvalidProtocol(f"Wrong protocol type for {self.carter_type}")
-    if protocol_dict["version"] != self.version:
-      raise InvalidProtocol(f"Version missmatch: I am {self.version}, but the protocol speaks {protocol_dict['version']}")
-    if len(protocol_dict["answers"]) <= 0:
-      raise InvalidProtocol(f"No answers received")
-    return protocol_dict
+  def __init__(self, **kwargs):
+    super().__init__(**kwargs)
+    self.token = kwargs["token"]
+    self.modules = []
+    if "modules" in kwargs:
+      for module in kwargs["modules"]:
+        if module["type"] == "cpu":
+          self.modules.append(CPUModule(**module))
+          continue
+        raise UnknownModule(f"module with type {module['type']} unknown")
 
-  def validate_and_return_contact_protocol(self, protocol_dict):
-    """Validates a dictionary as CARTER contact protocol.
+  def add_module(self, module):
+    self.modules.append(module)
 
-    Args:
-      protocol_dict: The dictionary to validate.
+class CarterModule:
 
-    Returns:
-      The same dictionary.
+  def __init__(self, **kwargs):
+    self.type = kwargs["type"]
 
-    Raises:
-      carter.exceptions.InvalidProtocol: if the dictionary violates the protocol.
-    """
-    if not all(k in protocol_dict for k in ("type","version", "name")):
-      raise InvalidProtocol("Not all needed keys found in protocol")
-    if protocol_dict["type"] != "helo":
-      raise InvalidProtocol(f"Wrong protocol type for {self.carter_type}")
-    if protocol_dict["version"] != self.version:
-      raise InvalidProtocol(f"Version missmatch: I am {self.version}, but the protocol speaks {protocol_dict['version']}")
-    return protocol_dict
+  def render(self):
+    return f"{self.type} has no render function defined!"
+
+class CPUModule(CarterModule):
+
+  def __init__(self, **kwargs):
+    self.type = "cpu"
+    self.label = "Cpu load"
+    if "cpu_values" in kwargs:
+      self.cpu_values = kwargs["cpu_values"]
+
+  def get_information(self):
+    import psutil
+    self.cpu_values = psutil.cpu_percent(percpu=True)
+
+  def __len__(self):
+    try:
+      return len(self.cpu_values)
+    except:
+      pass
+    return 0
+
+  def get_render_options(self):
+    # proof of concept color coding
+    DEFAULT_COLOR = "rgba(178, 178, 178, 0.2)"
+    WARNING_COLOR = "rgba(234, 237, 37, 0.2)"
+    ERROR_COLOR = "rgba(255, 99, 132, 0.2)"
+    render_data = get_default_render_options()
+    render_data["data"]["labels"] = list(range(1, len(self) + 1))
+    dataset = {}
+    dataset["label"] = self.label
+    dataset["data"] = self.cpu_values
+    dataset["backgroundColor"] = []
+    for data in self.cpu_values:
+      if data >= 80.0:
+        dataset["backgroundColor"].append(ERROR_COLOR)
+        continue
+      if data >= 40.0:
+        dataset["backgroundColor"].append(WARNING_COLOR)
+        continue
+      dataset["backgroundColor"].append(DEFAULT_COLOR)
+    render_data["data"]["datasets"] = [dataset]
+    return render_data
+
+class MemoryModule(CarterModule):
+  pass
+
+class DiskModule(CarterModule):
+  pass

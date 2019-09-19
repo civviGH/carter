@@ -1,4 +1,4 @@
-from carter.core import CarterCore
+from carter.core import *
 from carter.exceptions import *
 from flask import Flask, request, render_template
 from flask_socketio import SocketIO
@@ -25,47 +25,45 @@ class CarterServer(CarterCore):
     def return_view():
       return render_template("view.html", context=self.database)
 
-    @self.flask_app.route("/contact", methods = ["POST"])
-    def get_client_helo():
+    @self.flask_app.route("/hello", methods = ["POST"])
+    def get_client_hello():
       self.write_log(f"handling contact from {request.remote_addr}")
-      #TODO helo answer verify
       try:
-        validated_helo = self.validate_and_return_contact_protocol(json.loads(request.json))
-      except InvalidProtocol as ip:
-        self.write_log(ip.message)
-        return "", 400
-      except json.decoder.JSONDecodeError as je:
-        self.write_log("client helo was not json syntax")
-        return "", 400
+        validated_hello_package = HelloPackage(**json.loads(request.json))
       except TypeError as te:
-        self.write_log("client helo did not contain json data")
+        self.write_log(f"could not validate contact as hello package. TypeError")
         return "", 400
-      answer = self.forge_request_payload(validated_helo["name"])
-      return json.dumps(answer), 200
+      except KeyError as ke:
+        self.write_log(f"could not validate contact as hello package. KeyError")
+        return "", 400
+      if self.version != validated_hello_package.version:
+        self.write_log(f"client version is {validated_hello_package.version}, we are {self.verison}")
+        return "", 400
+      request_package = self.forge_request_package(validated_hello_package.client_name)
+      return request_package.to_json(), 200
 
     @self.flask_app.route("/answer", methods = ["POST"])
     def get_client_answer():
       self.write_log(f"handling answer from {request.remote_addr}")
-      answer = {}
-      answer["success"] = True
       try:
-        validated_answer = self.validate_and_return_answer_protocol(json.loads(request.json))
-      except InvalidProtocol as ip:
-        self.write_log(ip.message)
-        return
-      client_name = validated_answer["name"]
-      client_token = validated_answer["token"]
-      token_in_db = self.tokenbase.pop(client_name, None)
-      if token_in_db is None:
-        self.write_log(f"{client_name} answers but has no valid token")
-        return 400
-      if not secrets.compare_digest(token_in_db, client_token):
-        self.write_log(f"{client_name} has answer token, but it differs from my db")
-        return 400
-      self.write_report_to_database(validated_answer, client_name)
-      return json.dumps(answer), 200
+        validated_answer_package = ModulePackage(**json.loads(request.json))
+      except TypeError as te:
+        self.write_log(f"could not validate contact as answer package. TypeError")
+        self.write_log("package received:")
+        self.write_log(f"\n{json.loads(request.json)}")
+        return "", 400
+      except KeyError as ke:
+        self.write_log(f"could not validate contact as answer package. KeyError")
+        self.write_log("package received:")
+        self.write_log(f"\n{json.loads(request.json)}")
+        return "", 400
+      if not self.valid_token_in_database(validated_answer_package):
+        self.write_log(f"{validated_answer_package.client_name} answers but has no valid token")
+        return "", 400
+      self.write_report_to_database(validated_answer_package)
+      return "", 200
 
-  def forge_request_payload(self, client_name):
+  def forge_request_package(self, client_name):
     """Creates and returns a dictionary to server as payload to
     make a request to a client.
 
@@ -84,56 +82,31 @@ class CarterServer(CarterCore):
         'version': the version string of the server,
         'token': the 64 char long secret token used for further communication}
 
-    """
-    payload = {}
-    payload["type"] = "request"
-    payload["requested"] = self.fill_requested_modules(client_name)
-    payload["version"] = self.version
-    client_token = secrets.token_hex()
-    payload["token"] = client_token
-    self.tokenbase[client_name] = client_token
-    return payload
-
-  def fill_requested_modules(self, client_name):
-    """Create the list of the requested modules based on the client name.
-
-    Args:
-      client_name: The fqdn of the client
-
-    Returns:
-      A list of module instructions.
-
     Todo:
-      Allow individual config per client.
+      get actual list of client modules out of (default) config
+
     """
-    cpu_module = {}
-    cpu_module["name"] = "cpu_load"
-    return [cpu_module]
-
-  ### PUSH METHODS
-
-  def poll_all_clients(self):
-    for client_name in self.config["client_list"]:
-      self.poll_client(client_name)
-
-  def poll_client(self, client_name):
-    request_payload = self.forge_request_payload(client_name)
-    self.write_log(f"requesting data from {client_name}. payload:")
-    self.write_log(request_payload)
-    r = requests.post(f"https://{client_name}:{self.config['client_port']}/poll", json=json.dumps(request_payload), verify=False)
-    if r.status_code == 200:
-      self.write_log(f"succesful. answer:")
-      self.write_log(f"\n{r.text}")
-      validated_answer = self.validate_and_return_answer_protocol(json.loads(r.text))
-      #self.write_to_database(client_name, validated_answer["answers"])
-    else:
-      self.write_log(f"request failed with status code {r.status_code}. answer:")
-      self.write_log(f"\n{r.text}")
-    return
+    package = ModulePackage(
+      client_name = client_name,
+      version = self.version,
+      token = secrets.token_hex(16))
+    self.tokenbase[package.client_name] = package.token
+    # which modules to add depends on the client configuration
+    package.add_module(CPUModule())
+    return package
 
   ### DATABASE
 
-  def write_report_to_database(self, reported_answer, client_name):
+  def valid_token_in_database(self, answer_package):
+    client_name = answer_package.client_name
+    if client_name not in self.tokenbase:
+      return False
+    if not secrets.compare_digest(answer_package.token, self.tokenbase[client_name]):
+      return False
+    del self.tokenbase[client_name]
+    return True
+
+  def write_report_to_database(self, reported_answer):
     """Writes the answer of a client to the database.
 
     Also emits a ``database-update`` signal to adjust the view with the newly
@@ -152,39 +125,39 @@ class CarterServer(CarterCore):
       None
     """
     refresh_page = False
+    client_name = reported_answer.client_name
     if client_name not in self.database.keys():
       self.database[client_name] = {}
       refresh_page = True
-    for answer in reported_answer["answers"]:
-      self.database[client_name][answer['name']] = answer['value']
+    for module in reported_answer.modules:
+      self.database[client_name][module.type] = module
+    print(self.database)
+    # TODO live update mit neuen packages wieder zum laufen bringen
     if self.config["live_update"]:
       if refresh_page:
         self.write_log(f"refreshing page to update {client_name}")
         self.socketio.emit('refresh-page')
       else:
-        self.socketio.emit('database-update', {client_name: self.database[client_name]})
-    return
-
-  def print_database(self):
+        for module in reported_answer.modules:
+          data = {}
+          data["client_name"] = client_name
+          data["module"] = {}
+          data["module"]["type"] = module.type
+          data["module"]["render_options"] = module.get_render_options()
+          self.socketio.emit('update-module-of-client', data)
     return
 
   ### BOILERPLATE
 
   def run(self):
-    #context = SSL.Context(SSL.SSLv23_METHOD)
-    #context.use_privatekey_file(self.config["key_file"])
-    #context.use_certificate_file(self.config["cert_file"])
     self.socketio.run(
       self.flask_app,
       host='',
       debug=True,
       port=65432,
-      #ssl_context = context
       certfile=self.config["cert_file"],
       keyfile=self.config["key_file"]
-      #ssl_version=ssl.PROTOCOL_TLSv1_2,
-      #cert_reqs=ssl.CERT_REQUIRED
-      ) # ssl_context="adhoc"
+      )
 
   def setup_flask(self):
     self.flask_app = Flask(__name__)
