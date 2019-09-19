@@ -23,4 +23,8 @@ $(document).ready(function(){
   socket.on('refresh-page', function(updates){
     location.reload();
   });
+
+  var nametags = $(".outer-div").click(function(e){
+    $(e.currentTarget).children('div.inner-div').toggle();
+  });
 });
