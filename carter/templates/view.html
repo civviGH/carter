@@ -20,7 +20,7 @@ Welcome to CARTER: <hr><hr>
   {% for client_name, module_dict in context.items() %}
     <p id="{{ client_name }}">
       {% for moduletype, module in module_dict.items() %}
-        {{ module.label }}<br>
+        {{ client_name }}<br>
         <canvas id="c_{{ client_name }}_{{ moduletype }}" width="400" height="400"></canvas>
         <script>
           var ctx = document.getElementById('c_{{ client_name }}_{{ moduletype }}');
