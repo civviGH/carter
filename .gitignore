@@ -1,4 +1,5 @@
 # custom
+temp/
 
 # sqlite db files
 *.db
