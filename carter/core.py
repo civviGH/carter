@@ -4,6 +4,11 @@ import os
 import json
 from carter.exceptions import *
 
+DEFAULT_COLOR = "#22222255"
+OK_COLOR = "#04438955"
+WARNING_COLOR = "#ffad0555"
+ERROR_COLOR = "#a3000055"
+
 class CarterCore:
 
   def write_log(self, message):
@@ -68,6 +73,9 @@ class ModulePackage(CarterPackage):
         if module["type"] == "memory":
           self.modules.append(MemoryModule(**module))
           continue
+        if module["type"] == "disk":
+          self.modules.append(DiskModule(**module))
+          continue
         raise UnknownModule(f"module with type {module['type']} unknown")
 
   def add_module(self, module):
@@ -82,6 +90,9 @@ class CarterModule:
     render_options = {}
     render_options["data"] = {}
     return render_options
+
+  def get_information(self):
+    raise NotImplementedError()
 
 class CPUModule(CarterModule):
 
@@ -102,14 +113,8 @@ class CPUModule(CarterModule):
       pass
     return 0
 
-  def pp(self):
-    return json.dumps(self.get_render_options(), sort_keys = True, indent = 2)
-
   def get_render_options(self):
     # proof of concept color coding
-    DEFAULT_COLOR = "rgba(178, 178, 178, 0.2)"
-    WARNING_COLOR = "rgba(234, 237, 37, 0.2)"
-    ERROR_COLOR = "rgba(255, 99, 132, 0.2)"
     render_data = self.init_render_options()
     render_data["type"] = "bar"
     render_data["data"]["labels"] = list(range(1, len(self) + 1))
@@ -124,6 +129,8 @@ class CPUModule(CarterModule):
       if data >= 40.0:
         dataset["backgroundColor"].append(WARNING_COLOR)
         continue
+      if data >= 5.0:
+        dataset["backgroundColor"].append(OK_COLOR)
       dataset["backgroundColor"].append(DEFAULT_COLOR)
     render_data["data"]["datasets"] = [dataset]
     return render_data
@@ -151,21 +158,62 @@ class MemoryModule(CarterModule):
       pass
     return 0
 
-  def pp(self):
-    return json.dumps(self.get_render_options(), sort_keys = True, indent = 2)
-
   def get_render_options(self):
-    USED_COLOR = "rgba(255, 99, 132, 0.2)"
-    FREE_COLOR = "rgba(178, 178, 178, 0.2)"
     render_data = self.init_render_options()
     render_data["type"] = "doughnut"
     render_data["data"]["labels"] = ["free", "used"]
     dataset = {}
     dataset["label"] = self.label
     dataset["data"] = self.ram_values[1:]
-    dataset["backgroundColor"] = [FREE_COLOR, USED_COLOR]
+    dataset["backgroundColor"] = [OK_COLOR, ERROR_COLOR]
     render_data["data"]["datasets"] = [dataset]
     return render_data
 
 class DiskModule(CarterModule):
-  pass
+
+  def __init__(self, **kwargs):
+    self.type = "disk"
+    self.label = "Disk usage"
+    if "partitions" in kwargs:
+      self.partitions = kwargs["partitions"]
+    if "usage" in kwargs:
+      self.usage = kwargs["usage"]
+
+  def __len__(self):
+    try:
+      return len(self.disk_values)
+    except:
+      pass
+    return 0
+
+  def get_information(self):
+    import psutil
+    self.partitions = []
+    self.usage = []
+    partitions = psutil.disk_partitions()
+    for partition in partitions:
+      self.partitions.append(partition.mountpoint)
+      self.usage.append(psutil.disk_usage(partition.mountpoint).percent)
+
+  def get_render_options(self):
+    render_data = self.init_render_options()
+    render_data["type"] = "bar"
+    render_data["data"]["labels"] = self.partitions
+    dataset = {}
+    dataset["label"] = self.label
+    dataset["data"] = self.usage
+    colorlist = []
+    for data in self.usage:
+      if data >= 95.0:
+        colorlist.append(ERROR_COLOR)
+        continue
+      if data >= 80.0:
+        colorlist.append(WARNING_COLOR)
+        continue
+      if data >= 10.0:
+        colorlist.append(OK_COLOR)
+        continue
+      colorlist.append(DEFAULT_COLOR)
+    render_data["data"]["datasets"] = [dataset]
+    dataset["backgroundColor"] = colorlist
+    return render_data

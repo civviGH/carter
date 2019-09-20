@@ -94,6 +94,7 @@ class CarterServer(CarterCore):
     # which modules to add depends on the client configuration
     package.add_module(CPUModule())
     package.add_module(MemoryModule())
+    package.add_module(DiskModule())
     return package
 
   ### DATABASE
