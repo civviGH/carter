@@ -98,7 +98,7 @@ class CPUModule(CarterModule):
 
   def __init__(self, **kwargs):
     self.type = "cpu"
-    self.label = "Cpu load"
+    self.label = "Cpu load in %"
     if "cpu_values" in kwargs:
       self.cpu_values = kwargs["cpu_values"]
 
@@ -161,19 +161,27 @@ class MemoryModule(CarterModule):
   def get_render_options(self):
     render_data = self.init_render_options()
     render_data["type"] = "doughnut"
-    render_data["data"]["labels"] = ["free", "used"]
+    render_data["data"]["labels"] = ["Free RAM", "Used RAM"]
     dataset = {}
     dataset["label"] = self.label
     dataset["data"] = self.ram_values[1:]
-    dataset["backgroundColor"] = [OK_COLOR, ERROR_COLOR]
+    percent = self.ram_values[2]/self.ram_values[0]
+    c = OK_COLOR
+    print(percent)
+    if percent >= .80:
+      c = ERROR_COLOR
+    elif percent >= .60:
+      c = WARNING_COLOR
+    print(c)
     render_data["data"]["datasets"] = [dataset]
+    dataset["backgroundColor"] = [DEFAULT_COLOR, c]
     return render_data
 
 class DiskModule(CarterModule):
 
   def __init__(self, **kwargs):
     self.type = "disk"
-    self.label = "Disk usage"
+    self.label = "Disk usage in %"
     if "partitions" in kwargs:
       self.partitions = kwargs["partitions"]
     if "usage" in kwargs:
