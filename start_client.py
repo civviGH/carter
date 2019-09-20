@@ -4,5 +4,5 @@ import time
 if __name__ == "__main__":
   client = CarterClient()
   while True:
-    client.contact_server()
-    time.sleep(1)
+    client.run()
+    time.sleep(5)

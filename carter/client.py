@@ -4,6 +4,7 @@ from flask import Flask, request
 import json
 import requests
 import socket
+import os
 
 
 class CarterClient(CarterCore):
@@ -73,7 +74,29 @@ class CarterClient(CarterCore):
       return
     self.write_log(f"communication successful!")
 
+  def ask_for_server_certificate(self):
+    server_response = requests.post(f"https://{self.config['serverurl']}/get_cert",
+    json=json.dumps({"client_name": self.fqdn}),
+    verify=False)
+    if server_response.status_code != 200:
+      self.write_log(f"server answerer with status code {server_response.status_code}")
+      print(server_response.text)
+      return
+    self.write_log(f"retrieved server certificate, writing to {self.config['server_cert']}")
+    with open(self.config["server_cert"], "w") as cert_file:
+      cert_file.write(server_response.text)
+
+
   ### BOILERPLATE
+
+  def run(self):
+    if os.path.isfile(self.config["server_cert"]):
+      self.write_log(f"found file {self.config['server_cert']}, contacting server")
+      self.contact_server()
+      return
+    self.write_log(f"no file found at {self.config['server_cert']}, asking server for cert")
+    self.ask_for_server_certificate()
+
 
   def __init__(self, config_path = "cfg/client_config.yml"):
     self.carter_type = "client"

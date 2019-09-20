@@ -1,6 +1,6 @@
 from carter.core import *
 from carter.exceptions import *
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, Response
 from flask_socketio import SocketIO
 
 import requests
@@ -62,6 +62,17 @@ class CarterServer(CarterCore):
         return "", 400
       self.write_report_to_database(validated_answer_package)
       return "", 200
+
+    @self.flask_app.route("/get_cert", methods = ["POST"])
+    def get_certificate():
+      client_name = json.loads(request.json)["client_name"]
+      if client_name not in self.config['clients']:
+        return "", 400
+      with open(self.config["cert_file"]) as cert_file:
+        cert_data = cert_file.read()
+      response = Response(status=200)
+      response.set_data(cert_data)
+      return response
 
   def forge_request_package(self, client_name):
     """Creates and returns a dictionary to server as payload to

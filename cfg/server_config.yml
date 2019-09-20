@@ -2,3 +2,7 @@
 live_update: True
 cert_file: "temp/cert.pem"
 key_file: "temp/private_key.pem"
+clients:
+  - admin-01.staff
+  - admin-02.staff
+  - admin-04.staff
